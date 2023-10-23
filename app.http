@@ -1,0 +1,10 @@
+PUT http://localhost:3003/todos/1/ 
+Content-Type: application/json
+
+{
+      "status": "DONE"
+    }
+    
+###
+
+GET http://localhost:3003/todos?status=TO%20DO 
