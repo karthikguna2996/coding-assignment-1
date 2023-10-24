@@ -84,6 +84,7 @@ let middleWareFunctionGet = (request, response, next) => {
 };
 let middleWareFunctionPut = (request, response, next) => {
   let { todo, status, priority, category, dueDate } = request.body;
+  console.log(todo);
   let { todoId } = request.params;
   let priorityValues = ["HIGH", "MEDIUM", "LOW"];
   let statusValues = [`TO DO`, `IN PROGRESS`, `DONE`];
@@ -129,6 +130,7 @@ let middleWareFunctionPut = (request, response, next) => {
     }
   } else if (dueDate !== undefined) {
     let validDate = isValid(new Date(`${dueDate}`));
+    console.log(validDate);
     if (validDate === false) {
       response.status(400);
       response.send("Invalid Due Date");
@@ -143,6 +145,8 @@ let middleWareFunctionPut = (request, response, next) => {
     dueDate === undefined &&
     todoId !== undefined
   ) {
+    next();
+  } else if (todo !== undefined) {
     next();
   }
 };
@@ -301,7 +305,7 @@ app.get(`/agenda/`, middleWareFunctionGet, async (request, response) => {
   let getQueryDate = `
                SELECT id,todo,priority,status,category,due_date AS dueDate
                FROM todo
-               WHERE strftime('%Y-%M-%d',due_date) LIKE '${dueDate}'
+               WHERE  due_date LIKE '${dueDate}'
 
            `;
   let getResponseDate = await db.all(getQueryDate);
@@ -311,9 +315,10 @@ app.get(`/agenda/`, middleWareFunctionGet, async (request, response) => {
 app.post(`/todos/`, middleWareFunctionPost, async (request, response) => {
   let { id, todo, priority, status, category, dueDate } = request.body;
   let due_Date = format(new Date(`${dueDate}`), `yyyy-MM-dd`);
+  console.log(due_Date);
   let postQuery = `
                INSERT INTO todo(id,todo,priority,status,category,due_date)
-               VALUES (${id},'${todo}','${priority}','${status}','${category}',${due_Date});
+               VALUES (${id},'${todo}','${priority}','${status}','${category}','${due_Date}');
     `;
   await db.run(postQuery);
   response.send("Todo Successfully Added");
@@ -321,8 +326,9 @@ app.post(`/todos/`, middleWareFunctionPost, async (request, response) => {
 
 app.put(`/todos/:todoId/`, middleWareFunctionPut, async (request, response) => {
   let { id, todo, priority, status, category, dueDate } = request.body;
-
+  console.log(todo);
   let { todoId } = request.params;
+  console.log(todoId);
   if (
     status !== undefined &&
     priority === undefined &&
@@ -373,7 +379,7 @@ app.put(`/todos/:todoId/`, middleWareFunctionPut, async (request, response) => {
   } else {
     let putQuery = `
         UPDATE todo
-        SET strftime('yyyy-MM-dd',due_date) = '${due_Date}'
+        SET  due_date = '${dueDate}'
         WHERE id = ${todoId}
     `;
     await db.run(putQuery);
@@ -391,3 +397,4 @@ app.delete(`/todos/:todoId/`, async (request, response) => {
 });
 
 module.exports = app;
+
